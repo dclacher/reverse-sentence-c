@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
     char *fileBuffer;
     const char firstMessage[] = "This program encodes text\n";
     const char enterMessage[] = "\nEnter a sentence, e.g., Good morning sir, my name is Big Foot\n";
-    const char parentInitialMessage[] = "Created a child to perform task, waiting...\n";
-    const char emptyLineMessage[] = "Empty line\n";
+    const char parentInitialMessage[] = "Parent says: Created a child to perform task, waiting...\n";
+    const char emptyLineMessage[] = "Parent says: Empty line\n";
 
     // Prompts the message "This program encodes text"
     write(STDOUT_FILENO, firstMessage, sizeof(firstMessage));
@@ -28,11 +28,12 @@ int main(int argc, char *argv[])
     // Gets in an infinite loop
     while (1)
     {
-        stdinBuffer = malloc(255 * sizeof(char));
+        stdinBuffer = malloc(1024 * sizeof(char));
         // Writes the message "Enter a sentence, e.g., Good morning sir, my name is Big Foot"
         write(STDOUT_FILENO, enterMessage, sizeof(enterMessage));
         // Use read() to read the whole input line
-        read(STDIN_FILENO, stdinBuffer, 255);
+        read(STDIN_FILENO, stdinBuffer, 1024);
+
         // Fork
         int pid = fork();
         if (pid == -1)
@@ -63,10 +64,9 @@ int main(int argc, char *argv[])
                         perror("file problem");
                         exit(1);
                     }
-                    fileBuffer = malloc(255 * sizeof(char));
-                    read(fdr, fileBuffer, 255);
-                    //printf("Size of file buffer: %lu\n", sizeof(fileBuffer));
-                    write(STDOUT_FILENO, fileBuffer, 255);
+                    fileBuffer = malloc(1024 * sizeof(char));
+                    read(fdr, fileBuffer, 1024);
+                    write(STDOUT_FILENO, fileBuffer, 1024);
                     close(fdr);
                 }
             }
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 void childFunction(char *line)
 {
     // Writes the message "I am a child working for my parent"
-    const char initialMessage[] = "I am a child working for my parent\n";
+    const char initialMessage[] = "Child says: I am a child working for my parent\n";
     write(STDOUT_FILENO, initialMessage, sizeof(initialMessage));
 
     // in case of an empty line, the child calls exit(10)
@@ -95,15 +95,12 @@ void childFunction(char *line)
     {
         length++;
     }
-    char invertedLine[length];
+    char *invertedLine;
+    invertedLine = malloc(1024 * sizeof(char));
     for (i = length - 1; i >= 0; i--)
     {
         invertedLine[j++] = line[i];
     }
-    //printf("Value of j is %d, size of invertedLine is %lu\n", j, sizeof(invertedLine));
-    //invertedLine[j] = '\n';
-    //invertedLine[j + 1] = '\0';
-    //printf("Inverted line: %s\n", invertedLine);
 
     // opens the file called codes.txt, for writing and truncates it, to get rid of old contents
     int fdw;
@@ -114,7 +111,7 @@ void childFunction(char *line)
     }
 
     // writes the encoded line in codes.txt, then closes the file
-    write(fdw, invertedLine, sizeof(invertedLine));
+    write(fdw, invertedLine, length);
     close(fdw);
 
     // calls exit(0)
