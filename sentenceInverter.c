@@ -1,8 +1,3 @@
-/* Advanced Systems Programming
- * Assignment 5
- * Daniel Carneiro Lacher
- * 110024246 */
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
